@@ -5,6 +5,7 @@ class Entity{
     type:string
     children = new Set<number>()
     pos:Vector
+    store:EntityStore
 
     onEvent:EventQueue = new EventQueue()
 
@@ -26,14 +27,7 @@ class Entity{
 
     }
 
-    getByPath(){
-
-    }
+    
 }
 
 
-class XPathStep{
-    searchstart//root,current
-    searchspace//child,descendant,parent,ancestor
-    filter
-}
