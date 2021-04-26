@@ -1,6 +1,8 @@
 class GridClient{
-    minindex
-    maxindex
+    minindex:Vector
+    maxindex:Vector
+    data:any
+    grid:Grid
 
     constructor(public pos:Vector, public size:Vector){
 
@@ -13,67 +15,29 @@ class Grid{
     constructor(public cellsize:Vector){
     }
 
-    key(pos:Vector){
-        return `${pos.x}:${pos.y}`
-    }
-
     newClient(pos,size){
         var c = new GridClient(pos,size)
-        this.insert(c)
+        c.grid = this
+        this._insert(c)
         return c
-    }
-
-    insert(c:GridClient){
-        var {tl,br} = this.convertClient(c)
-        c.minindex = tl
-        c.maxindex = br
-        this.getCells(tl,br).forEach(v => {
-            this.upsert(v,c)
-        })
     }
 
     update(c:GridClient){
         this.remove(c)
-        this.insert(c)
+        this._insert(c)
     }
 
     remove(c:GridClient){
-        this.getCells(c.minindex,c.maxindex).forEach(v => {
-            this.downsert(v,c)
+        this._getCells(c.minindex,c.maxindex).forEach(v => {
+            this._downsert(v,c)
         })
-    }
-
-
-
-
-
-    
-
-
-
-    upsert(pos:Vector,client:GridClient){
-        var set:Set<GridClient>
-        if(this.cells.has(this.key(pos))){
-            set = this.cells.get(this.key(pos))
-        }else{
-            set = new Set<GridClient>()
-        }
-        set.add(client)
-    }
-
-    downsert(pos:Vector,client:GridClient){
-        var set = this.cells.get(this.key(pos))
-        set.delete(client)
-        if(set.size == 0){
-            this.cells.delete(this.key(pos))
-        }
     }
 
     findNearbyFast(center:Vector,size:Vector):GridClient[]{
         var res = new Set<GridClient>()
-        var {tl,br} = this.convertCenterSize(center,size)
-        this.getCells(tl,br).forEach(c => {
-            var cell = this.cells.get(this.key(c))
+        var {tl,br} = this._convertCenterSize(center,size)
+        this._getCells(tl,br).forEach(c => {
+            var cell = this.cells.get(this._key(c))
             for(var el of cell){
                 res.add(el)
             }
@@ -87,15 +51,50 @@ class Grid{
         return incirclecs
     }
 
-    Index(abspos:Vector):Vector{
+
+
+    _key(pos:Vector){
+        return `${pos.x}:${pos.y}`
+    }
+
+    _insert(c:GridClient){
+        var {tl,br} = this._convertClient(c)
+        c.minindex = tl
+        c.maxindex = br
+        this._getCells(tl,br).forEach(v => {
+            this._upsert(v,c)
+        })
+    }
+
+    _upsert(pos:Vector,client:GridClient){
+        var set:Set<GridClient>
+        if(this.cells.has(this._key(pos))){
+            set = this.cells.get(this._key(pos))
+        }else{
+            set = new Set<GridClient>()
+        }
+        set.add(client)
+    }
+
+    _downsert(pos:Vector,client:GridClient){
+        var set = this.cells.get(this._key(pos))
+        set.delete(client)
+        if(set.size == 0){
+            this.cells.delete(this._key(pos))
+        }
+    }
+
+    _Index(abspos:Vector):Vector{
         return abspos.c().div(this.cellsize).floor()
     }
 
-    getCells(tlabs:Vector,brabs:Vector){
-        var tl = this.Index(tlabs)
-        var br = this.Index(brabs)
+    _getCells(tlabs:Vector,brabs:Vector){
+        var tl = this._Index(tlabs)
+        var br = this._Index(brabs)
 
         var res:Vector[] = []
+
+        //todo
         tl.to(br).loop2d(v => {
             var gpos = v.c().add(tl)
             res.push(gpos)
@@ -103,11 +102,11 @@ class Grid{
         return res
     }
 
-    convertClient(c:GridClient){
-        return this.convertCenterSize(c.pos,c.size)
+    _convertClient(c:GridClient){
+        return this._convertCenterSize(c.pos,c.size)
     }
 
-    convertCenterSize(center:Vector,size:Vector){
+    _convertCenterSize(center:Vector,size:Vector){
         var hs = size.c().scale(0.5)
         var tl = center.c().sub(hs)
         var br = center.c().add(hs)

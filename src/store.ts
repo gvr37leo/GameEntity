@@ -35,9 +35,34 @@ class EntityStore{
             oldparent.onEvent.addAndTrigger('remove',ent)
             
         }
-        parent.children.add(ent.id)
-        ent.parent = parent.id
-        parent.onEvent.addAndTrigger('add',ent)
+        if(parent != null){
+            ent.parent = parent.id
+            parent.children.add(ent.id)
+            parent.onEvent.addAndTrigger('add',ent)
+        }
+    }
+
+    ancestor(ent:Entity,type:string){
+        var current = ent
+        while(current != null){
+            if(current.type == type){
+                return current
+            }
+            current = this.parent(ent)
+        }
+        return null
+    }
+
+    parent(ent:Entity){
+        return this.map.get(ent.parent)
+    }
+
+    children(ent:Entity){
+        return Array.from(ent.children.values()).map(id => this.map.get(id))
+    }
+
+    descendants(ent:Entity){
+        return this.children(ent).flatMap(ent => this.descendants(ent))
     }
 
     getByPath(){

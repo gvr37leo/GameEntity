@@ -4,7 +4,6 @@ class Entity{
     parent:number
     type:string
     children = new Set<number>()
-    pos:Vector
     store:EntityStore
 
     onEvent:EventQueue = new EventQueue()
@@ -15,16 +14,25 @@ class Entity{
     // onTick
     // onDraw
 
-    constructor(){
-
+    constructor(init?:Partial<Entity>){
+        Object.assign(this,init)
+        this.type = 'entity'
     }
 
-    getAncestor(){
-
+    ancestor(type:string){
+        return this.store.ancestor(this,type)
     }
 
-    getDescendants(){
+    _parent(){
+        return this.store.parent(this)
+    }
 
+    _children(){
+        return this.store.children(this)
+    }
+
+    descendants(){
+        return this.store.descendants(this)
     }
 
     

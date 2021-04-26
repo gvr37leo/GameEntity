@@ -12,6 +12,7 @@
 /// <reference path="src/store.ts" />
 /// <reference path="src/entity.ts" />
 /// <reference path="src/quadgrid.ts" />
+/// <reference path="src/gameobject.ts" />
 
 
 
@@ -25,6 +26,17 @@ var ctxt = crret.ctxt
 
 var grid = new Grid(new Vector(4,4))
 var store = new EntityStore()
+var root = store.add(new Entity(),null)
+var rng = new RNG(0)
+
+for(var i = 0; i < 1; i++){
+    
+    var obj = store.add(new GameObject({
+        speed:new Vector(rng.range(5,10),rng.range(5,10)),
+        pos:new Vector(rng.range(-50,50),rng.range(-50,50)),
+    }),root) as GameObject
+    obj.gridclient = grid.newClient(obj.pos,new Vector(1,1))
+}
 
 loop((dt) => {
     ctxt.clearRect(0,0,screensize.x,screensize.y)
@@ -36,6 +48,6 @@ loop((dt) => {
     }
 
     for(var entity of entities){
-        entity.onEvent.addAndTrigger('draw',null)
+        entity.onEvent.addAndTrigger('draw',ctxt)
     }
 })
