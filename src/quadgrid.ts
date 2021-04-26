@@ -95,10 +95,11 @@ class Grid{
         var res:Vector[] = []
 
         //todo
-        tl.to(br).loop2d(v => {
-            var gpos = v.c().add(tl)
-            res.push(gpos)
-        })
+        for(var x = tl.x; x <= br.x; x++){
+            for(var y = tl.y; y <= br.y; y++){
+                res.push(new Vector(x,y))
+            }
+        }
         return res
     }
 
